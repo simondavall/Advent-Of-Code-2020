@@ -12,7 +12,7 @@ func ReadLines(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var lines []string
 	scanner := bufio.NewScanner(f)
@@ -31,7 +31,7 @@ func ReadFileToIntArray(path string) ([]int, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var lines []int
 	scanner := bufio.NewScanner(f)
@@ -54,7 +54,7 @@ func ReadFileToInt64Array(path string) ([]int64, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var lines []int64
 	scanner := bufio.NewScanner(f)
@@ -81,7 +81,7 @@ func ReadFileSplitBy(path string, sep string) ([]string, error) {
 	var lines []string
 	content := string(b)
 
-	for _, str := range strings.Split(content, sep) {
+	for str := range strings.SplitSeq(content, sep) {
 		if str != "" {
 			lines = append(lines, str)
 		}
