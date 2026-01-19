@@ -1,14 +1,19 @@
 package main
-
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
+
+var title string = "# Day 7: Handy Haversacks #"
+var url string = "https://adventofcode.com/2020/day/7"
+var expectedResult1 int64 = 252
+var expectedResult2 int64 = 35487
 
 type Bag struct {
 	name     string
@@ -26,32 +31,9 @@ var (
 	countCache = make(map[string]int)
 )
 
-func main() {
-	var expectedResult1 int64 = 252
-	var expectedResult2 int64 = 35487
-	day := "07"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo()
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
-
-func PartOne(lines []string) int64 {
+func PartOne(input []byte) int64 {
+	clearCache()
+	var lines = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
 	loadBags(lines)
 
 	var tally int64 = 0
@@ -65,7 +47,7 @@ func PartOne(lines []string) int64 {
 }
 
 func PartTwo() int64 {
-	var tally int = 0
+	var tally = 0
 
 	shinyGold := bags["shiny gold"]
 	for _, child := range shinyGold.children {
@@ -80,7 +62,7 @@ func GetBagCount(bagChild BagChild) int {
 		return bagChild.amount + (val * bagChild.amount)
 	}
 
-	var current Bag = bags[bagChild.name]
+	current := bags[bagChild.name]
 	childrenCount := 0
 
 	for _, next := range current.children {
@@ -129,7 +111,7 @@ func CanContainGoldBag(bagName string) bool {
 
 func loadBags(lines []string) {
 	pattern1 := " (\\d+) ([\\w\\s]+) bags?[,.]"
-
+	
 	for _, line := range lines {
 		s := strings.Split(line, " bags contain")
 		r := regexp.MustCompile(pattern1)
@@ -140,7 +122,46 @@ func loadBags(lines []string) {
 			amount, _ := strconv.Atoi(match[1])
 			children = append(children, BagChild{name, amount})
 		}
-		var bag Bag = Bag{s[0], children}
+		var bag = Bag{s[0], children}
 		bags[s[0]] = bag
+	}
+}
+
+func clearCache(){
+	bags       = make(map[string]Bag)
+	goldCache  = make(map[string]bool)
+	countCache = make(map[string]int)
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo()
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
 }

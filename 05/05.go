@@ -2,39 +2,22 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 987
-	var expectedResult2 int64 = 603
-	day := "05"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(lines)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 5: Binary Boarding #"
+var url string = "https://adventofcode.com/2020/day/5"
+var expectedResult1 int64 = 987
+var expectedResult2 int64 = 603
 
 var maxSeatId int
 
-func PartOne(passes []string) int64 {
+func PartOne(input []byte) int64 {
+	var passes = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
 	for _, pass := range passes {
 		if pass[0] != 'B' {
 			continue
@@ -46,8 +29,9 @@ func PartOne(passes []string) int64 {
 	return int64(maxSeatId)
 }
 
-func PartTwo(passes []string) int64 {
-	var mySeatId int = 0
+func PartTwo(input []byte) int64 {
+	var passes = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
+	var mySeatId = 0
 	occupied := make([]bool, maxSeatId+1)
 
 	for _, pass := range passes {
@@ -66,8 +50,8 @@ func PartTwo(passes []string) int64 {
 }
 
 func calcSeatId(pass string) int {
-	var rowCode string = pass[:len(pass)-3]
-	var seatCode string = pass[len(pass)-3:]
+	var rowCode = pass[:len(pass)-3]
+	var seatCode  = pass[len(pass)-3:]
 	var row int
 	for _, x := range rowCode {
 		row <<= 1
@@ -84,3 +68,37 @@ func calcSeatId(pass string) int {
 	}
 	return row*8 + seat
 }
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
