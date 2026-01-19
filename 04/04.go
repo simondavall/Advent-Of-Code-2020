@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -10,30 +11,10 @@ import (
 	aoc "aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 206
-	var expectedResult2 int64 = 123
-	day := "04"
-
-	lines, err := aoc.ReadFileSplitBy("input.txt", "\n\n")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(lines)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 4: Passport Processing #"
+var url string = "https://adventofcode.com/2020/day/4"
+var expectedResult1 int64 = 206
+var expectedResult2 int64 = 123
 
 type Passport struct {
 	BirthYear  int
@@ -46,14 +27,9 @@ type Passport struct {
 	CountryId  int
 }
 
-func PartOne(input []string) int64 {
+func PartOne(input []byte) int64 {
+	var passports = ProcessInput(input)
 	var tally int64 = 0
-
-	passports, err := getPassports(input)
-	if err != nil {
-		fmt.Println(err)
-		return 0
-	}
 
 	for _, p := range passports {
 		if isPassportValid(p) {
@@ -64,14 +40,9 @@ func PartOne(input []string) int64 {
 	return tally
 }
 
-func PartTwo(input []string) int64 {
+func PartTwo(input []byte) int64 {
+	var passports = ProcessInput(input)
 	var tally int64 = 0
-
-	passports, err := getPassports(input)
-	if err != nil {
-		fmt.Println(err)
-		return 0
-	}
 
 	for _, p := range passports {
 		if isPassportValidStrict(p) {
@@ -152,18 +123,26 @@ func isPassportValidStrict(p Passport) bool {
 	return true
 }
 
+func ProcessInput(input []byte) []Passport {
+	content := strings.Split(string(input), "\n\n")
+	passports, err := getPassports(content)
+	check(err)
+	return passports
+}
+
 func getPassports(input []string) ([]Passport, error) {
 	var passports []Passport
 	for _, str := range input {
 		lines := strings.Split(str, "\n")
 		var passport Passport
 		for _, line := range lines {
-			items := strings.Split(line, " ")
-			for _, item := range items {
-				entry := strings.Split(item, ":")
-				err := populate(entry[0], entry[1], &passport)
-				if err != nil {
-					return nil, err
+			items := strings.SplitSeq(line, " ")
+			for item := range items {
+				if len(item) > 0 {
+					k, v, err := aoc.ToStrPair(item, ":")
+					check(err)
+					err = populatePassportField(k, v, &passport)
+					check(err)
 				}
 			}
 		}
@@ -172,7 +151,7 @@ func getPassports(input []string) ([]Passport, error) {
 	return passports, nil
 }
 
-func populate(k string, v string, passport *Passport) error {
+func populatePassportField(k string, v string, passport *Passport) error {
 	switch k {
 	case "byr":
 		byr, err := strconv.Atoi(v)
@@ -212,3 +191,37 @@ func populate(k string, v string, passport *Passport) error {
 	}
 	return nil
 }
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
