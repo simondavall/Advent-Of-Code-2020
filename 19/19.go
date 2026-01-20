@@ -2,13 +2,19 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
+
+var title string = "# Day 19: Monster Messages #"
+var url string = "https://adventofcode.com/2020/day/19"
+var expectedResult1 int64 = 233
+var expectedResult2 int64 = 396
 
 type Rule struct {
 	kind              string
@@ -17,35 +23,9 @@ type Rule struct {
 	muliple_sub_rules []Rule
 }
 
-func main() {
-	var expectedResult1 int64 = 233
-	var expectedResult2 int64 = 396
-	day := "19"
-
-	blocks, err := aoc.ReadFileSplitBy("input.txt", "\n\n")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(blocks)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(blocks)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
-
-func PartOne(blocks []string) int64 {
+func PartOne(input []byte) int64 {
+	lines, messages := processInput(input)
 	var tally int64 = 0
-	lines := strings.Split(blocks[0], "\n")
-	messages := strings.Split(blocks[1], "\n")
 
 	rules := make(map[int]Rule)
 	for _, line := range lines {
@@ -62,10 +42,9 @@ func PartOne(blocks []string) int64 {
 	return tally
 }
 
-func PartTwo(blocks []string) int64 {
+func PartTwo(input []byte) int64 {
+	lines, messages := processInput(input)
 	var tally int64 = 0
-	lines := strings.Split(blocks[0], "\n")
-	messages := strings.Split(blocks[1], "\n")
 
 	rules := make(map[int]Rule)
 	for _, line := range lines {
@@ -113,9 +92,7 @@ func matchRuleIndex(line string, rules map[int]Rule, index int) []string {
 		var result []string
 
 		for _, rule := range rules[index].muliple_sub_rules {
-			for _, input := range matchSubRuleIndex(line, rules, rule.sub_rules) {
-				result = append(result, input)
-			}
+			result = append(result, matchSubRuleIndex(line, rules, rule.sub_rules)...)
 		}
 		return result
 	default:
@@ -133,9 +110,7 @@ func matchSubRuleIndex(line string, rules map[int]Rule, sub_rules []int) []strin
 
 		new_inputs := []string{}
 		for _, input := range inputs {
-			for _, rest := range matchRuleIndex(input, rules, subindex) {
-				new_inputs = append(new_inputs, rest)
-			}
+			new_inputs = append(new_inputs, matchRuleIndex(input, rules, subindex)...)
 		}
 		inputs = new_inputs
 	}
@@ -158,9 +133,9 @@ func parseRule(line string) Rule {
 		return Rule{"single", match[1], nil, nil}
 	} else {
 		var result []Rule
-		for _, subrule := range strings.Split(line, " | ") {
+		for subrule := range strings.SplitSeq(line, " | ") {
 			var sub_rules []int
-			for _, rule := range strings.Split(subrule, " ") {
+			for rule := range strings.SplitSeq(subrule, " ") {
 				n, err := strconv.Atoi(rule)
 				if err != nil {
 					panic(fmt.Sprintf("Failed to conver rule:%s Err:%s", rule, err))
@@ -170,5 +145,50 @@ func parseRule(line string) Rule {
 			result = append(result, Rule{"sub_rules", "", sub_rules, nil})
 		}
 		return Rule{"multi", "", nil, result}
+	}
+}
+
+func processInput(input []byte) ([]string, []string){
+	var blocks = aoc.RemoveEmpties(strings.Split(string(input), "\n\n"))
+	if (len(blocks) != 2){
+		panic(fmt.Sprintf("Expected 2 blocks when processing input. Found:%d", len(blocks)))
+	}
+
+	lines := strings.Split(blocks[0], "\n")
+	messages := strings.Split(blocks[1], "\n")
+
+	return lines, messages
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
 }

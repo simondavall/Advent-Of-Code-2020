@@ -1,43 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"time"
-
-	aoc "aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 240
-	var expectedResult2 int64 = 1180
-	day := "17"
+var title string = "# Day 17: Conway Cubes #"
+var url string = "https://adventofcode.com/2020/day/17"
+var expectedResult1 int64 = 240
+var expectedResult2 int64 = 1180
 
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	var plainGrid [][]byte
-	for _, line := range lines {
-		plainGrid = append(plainGrid, []byte(line))
-	}
-	var grid [][][]byte
-	grid = append(grid, plainGrid)
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(grid)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(grid)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
 
 type WXYZ struct {
 	w int
@@ -46,7 +20,8 @@ type WXYZ struct {
 	z int
 }
 
-func PartOne(grid [][][]byte) int64 {
+func PartOne(input []byte) int64 {
+	var grid = getGrid(input)
 	check := make(map[WXYZ]bool)
 	active := make(map[WXYZ]bool)
 	for z, plain := range grid {
@@ -86,7 +61,8 @@ func PartOne(grid [][][]byte) int64 {
 	return int64(len(active))
 }
 
-func PartTwo(grid [][][]byte) int64 {
+func PartTwo(input []byte) int64 {
+	var grid = getGrid(input)
 	check := make(map[WXYZ]bool)
 	active := make(map[WXYZ]bool)
 	for z, plain := range grid {
@@ -154,4 +130,53 @@ func addNeighboursToCheck(cur WXYZ, check map[WXYZ]bool) map[WXYZ]bool {
 		}
 	}
 	return check
+}
+
+func getGrid(input []byte) [][][]byte {
+ 	var plainGrid [][]byte
+	var width = bytes.IndexByte(input, '\n') + 1
+
+	idx := 0
+	for idx < len(input) - (width - 1){
+		plainGrid = append(plainGrid, input[idx:idx + width - 1])
+		idx += width
+	}
+
+	var grid [][][]byte
+	grid = append(grid, plainGrid)
+	
+	return grid
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
