@@ -2,61 +2,32 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 1749
-	var expectedResult2 int64 = 515
-	day := "08"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo()
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 8: Handheld Halting #"
+var url string = "https://adventofcode.com/2020/day/8"
+var expectedResult1 int64 = 1749
+var expectedResult2 int64 = 515
 
 type Instruction struct {
 	name  string
 	value int
 }
 
-var instructions []Instruction
-
-func PartOne(lines []string) int64 {
-	for _, line := range lines {
-		s := strings.Split(line, " ")
-		value, _ := strconv.Atoi(s[1])
-		instructions = append(instructions, Instruction{s[0], value})
-	}
-
+func PartOne(input []byte) int64 {
+	var instructions = getInstructions(input)
 	ip := 0
 	var acc int64 = 0
-	var seen []int = []int{}
+	var seen = []int{}
 
-	for true {
-		if ip < 0 || ip >= len(lines) || slices.Contains(seen, ip) {
-			break
-		}
+	for ip >= 0 && ip < len(instructions) && !slices.Contains(seen, ip) {
 		seen = append(seen, ip)
 		ins := instructions[ip]
 		ip, acc = ProcessInstruction(ins, ip, acc)
@@ -65,7 +36,8 @@ func PartOne(lines []string) int64 {
 	return acc
 }
 
-func PartTwo() int64 {
+func PartTwo(input []byte) int64 {
+	var instructions = getInstructions(input)
 	var acc int64 = 0
 	for idx, ins := range instructions {
 		orig := ""
@@ -83,10 +55,10 @@ func PartTwo() int64 {
 
 		ip := 0
 		acc = 0
-		var seen []int = []int{}
+		var seen = []int{}
 		success := false
 
-		for true {
+		for {
 			if ip < 0 {
 				panic("Cannot have negative instruction pointer")
 			}
@@ -126,3 +98,49 @@ func ProcessInstruction(ins Instruction, ip int, acc int64) (int, int64) {
 	}
 	return ip, acc
 }
+
+func getInstructions(input []byte) []Instruction {
+	var instructions []Instruction
+
+	var lines = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
+	for _, line := range lines {
+		s := strings.Split(line, " ")
+		value, _ := strconv.Atoi(s[1])
+		instructions = append(instructions, Instruction{s[0], value})
+	}
+	return instructions
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+

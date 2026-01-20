@@ -2,39 +2,24 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 0
-	var expectedResult2 int64 = 0
-	day := "09"
-
-	data, err := aoc.ReadFileToInt64Array("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(data)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(data)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 9: Encoding Error #"
+var url string = "https://adventofcode.com/2020/day/9"
+var expectedResult1 int64 = 14144619
+var expectedResult2 int64 = 1766397
 
 var invalidNumber int64
 
-func PartOne(data []int64) int64 {
+func PartOne(input []byte) int64 {
+	var data = getEncryptedNumbers(input)
+
 	scope := 25
 
 	for idx, n := range data[scope:] {
@@ -47,9 +32,10 @@ func PartOne(data []int64) int64 {
 	return invalidNumber
 }
 
-func PartTwo(data []int64) int64 {
+func PartTwo(input []byte) int64 {
+	var data = getEncryptedNumbers(input)
 	contigious := findContigiousRange(invalidNumber, data)
-	var min int64 = invalidNumber
+	var min = invalidNumber
 	var max int64 = 0
 	for _, val := range contigious {
 		min = aoc.Min64(min, val)
@@ -59,14 +45,11 @@ func PartTwo(data []int64) int64 {
 }
 
 func findContigiousRange(n int64, data []int64) []int64 {
-	var lower int = 0
-	var upper int = 0
+	var lower = 0
+	var upper = 0
 	sum := data[upper]
 
-	for true {
-		if sum == n {
-			break
-		}
+	for sum != n {
 		if sum > n {
 			sum -= data[lower]
 			lower++
@@ -89,4 +72,48 @@ func isValidCode(n int64, prev []int64) bool {
 		}
 	}
 	return false
+}
+
+func getEncryptedNumbers(input []byte) []int64 {
+	var lines = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
+	var numbers []int64
+	for _, line := range lines{
+		n, err := strconv.ParseInt(line, 10, 64)
+		check(err)
+		numbers = append(numbers, n)
+	}
+	return numbers
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
