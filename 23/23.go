@@ -2,56 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"time"
-
-	aoc "aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 32897654
-	var expectedResult2 int64 = 186715244496
-	day := "23"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	first := Cup{int(lines[0][0] - '0'), nil, nil}
-	prev := &first
-	for _, b := range lines[0][1:] {
-		current := Cup{int(b - '0'), prev, nil}
-		prev.next = &current
-		prev = &current
-	}
-	first.prev = prev
-	prev.next = &first
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(&first, len(lines[0]))
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-
-	first = Cup{int(lines[0][0] - '0'), nil, nil}
-	prev = &first
-	for _, b := range lines[0][1:] {
-		current := Cup{int(b - '0'), prev, nil}
-		prev.next = &current
-		prev = &current
-	}
-	first.prev = prev
-	prev.next = &first
-
-	resultPartTwo := PartTwo(&first)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 23: Crab Cups #"
+var url string = "https://adventofcode.com/2020/day/23"
+var expectedResult1 int64 = 32897654
+var expectedResult2 int64 = 186715244496
 
 type Cup struct {
 	value int
@@ -59,7 +18,8 @@ type Cup struct {
 	next  *Cup
 }
 
-func PartOne(start *Cup, size int) int64 {
+func PartOne(input []byte) int64 {
+	start, size := processInput(input)
 	curPtr := start
 
 	ptr := start
@@ -102,7 +62,8 @@ func PartOne(start *Cup, size int) int64 {
 	return tally
 }
 
-func PartTwo(start *Cup) int64 {
+func PartTwo(input []byte) int64 {
+	start, _ := processInput(input)
 	curPtr := start
 	last := curPtr.prev
 	size := 1000000
@@ -171,4 +132,58 @@ func getSelectedValues(first *Cup) (map[int]bool, *Cup) {
 	last = last.next
 	selectedValues[last.value] = true
 	return selectedValues, last
+}
+
+func processInput(input []byte) (*Cup, int) { 
+	var numbers []int
+	for _, b := range input[:len(input)-1] {
+		n, err := strconv.Atoi(string(b)) 
+		check(err)
+		numbers = append(numbers, n)
+	}
+
+	first := Cup{numbers[0], nil, nil}
+	prev := &first
+	for _, n := range numbers[1:] {
+		current := Cup{n, prev, nil}
+		prev.next = &current
+		prev = &current
+	}
+	first.prev = prev
+	prev.next = &first
+
+	return &first, len(numbers)
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

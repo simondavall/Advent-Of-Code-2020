@@ -2,35 +2,17 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 330
-	var expectedResult2 int64 = 3711
-	day := "24"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo()
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 24: Lobby Layout #"
+var url string = "https://adventofcode.com/2020/day/24"
+var expectedResult1 int64 = 330
+var expectedResult2 int64 = 3711
 
 type delta struct {
 	r int
@@ -48,7 +30,10 @@ var (
 	tiles      = make(map[string]*tile)
 )
 
-func PartOne(lines []string) int64 {
+func PartOne(input []byte) int64 {
+	tiles = make(map[string]*tile)
+
+	var lines = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
 	for _, line := range lines {
 		r, c := 0, 0
 		len := 0
@@ -123,7 +108,7 @@ func PartTwo() int64 {
 		tiles = copy
 	}
 
-	printTiles(tiles)
+	// printTiles(tiles)
 
 	var tally int64 = 0
 	for _, t := range tiles {
@@ -184,4 +169,37 @@ func printTiles(tiles map[string]*tile) {
 		fmt.Println()
 	}
 	fmt.Println()
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo()
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
