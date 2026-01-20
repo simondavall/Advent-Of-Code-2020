@@ -2,11 +2,17 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
+
+var title string = "# Day 11: Seating System #"
+var url string = "https://adventofcode.com/2020/day/11"
+var expectedResult1 int64 = 2483
+var expectedResult2 int64 = 2285
 
 type direction struct {
 	r int
@@ -19,39 +25,15 @@ var (
 	_width      int         = 0
 )
 
-func main() {
-	var expectedResult1 int64 = 2483
-	var expectedResult2 int64 = 2285
-	day := "11"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	_height = len(lines)
-	_width = len(lines[0])
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(lines)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
-
-func PartOne(grid []string) int64 {
+func PartOne(input []byte) int64 {
+	var grid = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
+	_height = len(grid)
+	_width = len(grid[0])
 	return int64(getOccupiedSeats(grid, getNewSeat))
 }
 
-func PartTwo(grid []string) int64 {
+func PartTwo(input []byte) int64 {
+	var grid = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
 	return int64(getOccupiedSeats(grid, getNewSeat2))
 }
 
@@ -97,7 +79,7 @@ func getNewSeat(ch rune, r int, c int, grid []string) rune {
 		for _, dir := range _directions {
 			nr := r + dir.r
 			nc := c + dir.c
-			if !outOfBounds(nr, nc) && grid[nr][nc] == '#' {
+			if isInBounds(nr, nc) && grid[nr][nc] == '#' {
 				return 'L'
 			}
 		}
@@ -108,7 +90,7 @@ func getNewSeat(ch rune, r int, c int, grid []string) rune {
 		for _, dir := range _directions {
 			nr := r + dir.r
 			nc := c + dir.c
-			if !outOfBounds(nr, nc) && grid[nr][nc] == '#' {
+			if isInBounds(nr, nc) && grid[nr][nc] == '#' {
 				occupied++
 			}
 		}
@@ -134,7 +116,7 @@ func getNewSeat2(ch rune, r int, c int, grid []string) rune {
 			for {
 				nr += dir.r
 				nc += dir.c
-				if outOfBounds(nr, nc) {
+				if !isInBounds(nr, nc) {
 					break
 				}
 				if grid[nr][nc] == '.' {
@@ -155,7 +137,7 @@ func getNewSeat2(ch rune, r int, c int, grid []string) rune {
 			for {
 				nr += dir.r
 				nc += dir.c
-				if outOfBounds(nr, nc) {
+				if !isInBounds(nr, nc) {
 					break
 				}
 				if grid[nr][nc] == '.' {
@@ -177,6 +159,39 @@ func getNewSeat2(ch rune, r int, c int, grid []string) rune {
 	}
 }
 
-func outOfBounds(r int, c int) bool {
-	return r < 0 || r >= _height || c < 0 || c >= _width
+func isInBounds(r int, c int) bool {
+	return 0 <= r && r < _height && 0 <= c && c < _width
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

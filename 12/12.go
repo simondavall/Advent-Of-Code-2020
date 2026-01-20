@@ -2,40 +2,23 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 759
-	var expectedResult2 int64 = 45763
-	day := "12"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(lines)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 12: Rain Risk #"
+var url string = "https://adventofcode.com/2020/day/12"
+var expectedResult1 int64 = 759
+var expectedResult2 int64 = 45763
 
 var directions []byte = []byte{'N', 'E', 'S', 'W'}
 
-func PartOne(lines []string) int64 {
+func PartOne(input []byte) int64 {
+	var lines = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
 	hor := 0  // east/west distance
 	vert := 0 // north/south distance
 	dir := 1
@@ -58,17 +41,14 @@ func PartOne(lines []string) int64 {
 			dh, dv := move(ins, value)
 			hor += dh
 			vert += dv
-			break
 		case 'F':
 			dh, dv := move(directions[dir], value)
 			hor += dh
 			vert += dv
-			break
 		case 'L':
 			fallthrough
 		case 'R':
 			dir = turn(ins, value, dir)
-			break
 		}
 	}
 
@@ -80,10 +60,11 @@ type waypoint struct {
 	vert int
 }
 
-func PartTwo(lines []string) int64 {
+func PartTwo(input []byte) int64 {
+	var lines = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
 	hor := 0  // east/west distance
 	vert := 0 // north/south distance
-	var w waypoint = waypoint{10, 1}
+	var w = waypoint{10, 1}
 
 	for _, line := range lines {
 		ins := line[0]
@@ -103,16 +84,13 @@ func PartTwo(lines []string) int64 {
 			dh, dv := move(ins, value)
 			w.hor += dh
 			w.vert += dv
-			break
 		case 'F':
 			hor += w.hor * value
 			vert += w.vert * value
-			break
 		case 'L':
 			fallthrough
 		case 'R':
 			rotate(ins, value, &w)
-			break
 		}
 	}
 
@@ -124,16 +102,12 @@ func move(ins byte, value int) (int, int) {
 	switch ins {
 	case 'N':
 		vert += value
-		break
 	case 'S':
 		vert -= value
-		break
 	case 'E':
 		hor += value
-		break
 	case 'W':
 		hor -= value
-		break
 	default:
 		panic("Invalid instruction passed to move()")
 	}
@@ -142,7 +116,7 @@ func move(ins byte, value int) (int, int) {
 
 func turn(ins byte, value int, dir int) int {
 	dirLen := len(directions)
-	var t int = value / 90
+	var t = value / 90
 	if ins == 'R' {
 		dir = (dir + t) % dirLen
 	} else {
@@ -152,12 +126,45 @@ func turn(ins byte, value int, dir int) int {
 }
 
 func rotate(ins byte, value int, w *waypoint) {
-	var t int = value / 90
+	var t = value / 90
 	for range t {
 		if ins == 'R' {
 			w.hor, w.vert = w.vert, w.hor*-1
 		} else {
 			w.hor, w.vert = w.vert*-1, w.hor
 		}
+	}
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
 }
