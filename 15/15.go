@@ -2,42 +2,24 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 870
-	var expectedResult2 int64 = 9136
-	day := "15"
+var title string = "# Day 15: Rambunctious Recitation #"
+var url string = "https://adventofcode.com/2020/day/15"
+var expectedResult1 int64 = 870
+var expectedResult2 int64 = 9136
 
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(lines)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(lines)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
-
-func PartOne(lines []string) int64 {
+func PartOne(input []byte) int64 {
+	var lines = aoc.RemoveEmpties(strings.Split(string(input),  "\n"))
 	line := lines[0]
 	numMap := make(map[int]int)
-	var diff int = 0
+	var diff = 0
 	initial := strings.Split(line, ",")
 	for idx, n := range initial {
 		n, _ := strconv.Atoi(n)
@@ -53,10 +35,11 @@ func PartOne(lines []string) int64 {
 	return int64(diff)
 }
 
-func PartTwo(lines []string) int64 {
+func PartTwo(input []byte) int64 {
+	var lines = aoc.RemoveEmpties(strings.Split(string(input),  "\n"))
 	line := lines[0]
 	numMap := make(map[int]int)
-	var diff int = 0
+	var diff = 0
 	initial := strings.Split(line, ",")
 	for idx, n := range initial {
 		n, _ := strconv.Atoi(n)
@@ -79,4 +62,37 @@ func addToNumMap(n int, idx int, numMap map[int]int) int {
 	}
 	numMap[n] = idx
 	return diff
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

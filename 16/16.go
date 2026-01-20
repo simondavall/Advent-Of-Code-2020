@@ -1,47 +1,22 @@
 package main
 
 import (
-	"cmp"
 	"fmt"
+	"os"
+	"cmp"
 	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 32835
-	var expectedResult2 int64 = 514662805187
-	day := "16"
-
-	blocks, err := aoc.ReadFileSplitBy("input.txt", "\n\n")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	input, err := parseInput(blocks)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(input)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(input)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 16: Ticket Translation #"
+var url string = "https://adventofcode.com/2020/day/16"
+var expectedResult1 int64 = 32835
+var expectedResult2 int64 = 514662805187
 
 type Range struct {
 	lower int
@@ -54,17 +29,18 @@ type Field struct {
 	ranges []Range
 }
 
-type Input struct {
+type TicketInfo struct {
 	fields    []Field
 	my_ticket []int
 	nearby    [][]int
 }
 
-func PartOne(input Input) int64 {
+func PartOne(input []byte) int64 {
+	var ticketInfo = getTicketInfo(input)
 	var tally int64 = 0
 
-	for _, ticket := range input.nearby {
-		invalidNumber := getInvalidField(ticket, input.fields)
+	for _, ticket := range ticketInfo.nearby {
+		invalidNumber := getInvalidField(ticket, ticketInfo.fields)
 		if invalidNumber > 0 {
 			tally += int64(invalidNumber)
 		}
@@ -73,16 +49,17 @@ func PartOne(input Input) int64 {
 	return tally
 }
 
-func PartTwo(input Input) int64 {
-	whereValid := func(ticket []int) bool { return isTicketValid(ticket, input.fields) }
-	validTickets := aoc.Filter(input.nearby, whereValid)
+func PartTwo(input []byte) int64 {
+	var ticketInfo = getTicketInfo(input)
+	whereValid := func(ticket []int) bool { return isTicketValid(ticket, ticketInfo.fields) }
+	validTickets := aoc.Filter(ticketInfo.nearby, whereValid)
 
 	var validFields [][][]string
 	for _, ticket := range validTickets {
 		var validIdsForTicket [][]string
 		for _, n := range ticket {
 			var validIdsForN []string
-			fieldsForValue := validFieldsForValue(n, input.fields)
+			fieldsForValue := validFieldsForValue(n, ticketInfo.fields)
 			for _, f := range fieldsForValue {
 				validIdsForN = append(validIdsForN, f.name)
 			}
@@ -120,7 +97,7 @@ func PartTwo(input Input) int64 {
 	var tally int64 = 1
 	for _, res := range result {
 		if strings.HasPrefix(res.result[0], "departure") {
-			tally *= int64(input.my_ticket[res.col_id])
+			tally *= int64(ticketInfo.my_ticket[res.col_id])
 		}
 	}
 
@@ -199,14 +176,21 @@ func removeValue(s []string, str string) []string {
 	return newArray
 }
 
-func parseInput(blocks []string) (Input, error) {
-	var input Input
+func getTicketInfo(input []byte) TicketInfo {
+	var dataBlocks = aoc.RemoveEmpties(strings.Split(string(input), "\n\n"))
+	ticketInfo, err := parseDataBlocks(dataBlocks)
+	check(err)
+	return ticketInfo
+}
+
+func parseDataBlocks(blocks []string) (TicketInfo, error) {
+	var input TicketInfo
 
 	rawFields := strings.Split(blocks[0], "\n")
 	for idx, rawField := range rawFields {
 		fields := strings.Split(rawField, ": ")
 		var fieldRanges []Range
-		for _, rawRanges := range strings.Split(fields[1], " or ") {
+		for rawRanges := range strings.SplitSeq(fields[1], " or ") {
 			items := strings.Split(rawRanges, "-")
 			lower, err := strconv.Atoi(items[0])
 			if err != nil {
@@ -222,7 +206,7 @@ func parseInput(blocks []string) (Input, error) {
 	}
 
 	rawMyTicket := strings.Split(blocks[1], "\n")
-	for _, val := range strings.Split(rawMyTicket[1], ",") {
+	for val := range strings.SplitSeq(rawMyTicket[1], ",") {
 		ticket, err := strconv.Atoi(val)
 		if err != nil {
 			return input, err
@@ -247,4 +231,37 @@ func parseInput(blocks []string) (Input, error) {
 		input.nearby = append(input.nearby, ticketNumbers)
 	}
 	return input, nil
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
