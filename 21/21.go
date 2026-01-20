@@ -2,53 +2,28 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
+
+var title string = "# Day 21: Allergen Assessment #"
+var url string = "https://adventofcode.com/2020/day/21"
+var expectedResult1 int64 = 2493
+var expectedResult2 string = "kqv,jxx,zzt,dklgl,pmvfzk,tsnkknk,qdlpbt,tlgrhdh"
 
 type Food struct {
 	ingredients []string
 	allergens   []string
 }
 
-func main() {
-	var expectedResult1 int64 = 2493
-	var expectedResult2 string = "kqv,jxx,zzt,dklgl,pmvfzk,tsnkknk,qdlpbt,tlgrhdh"
-	day := "21"
-
-	lines, err := aoc.ReadLines("input.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	var foods []Food
-	for _, line := range lines {
-		s := strings.Split(line, " (contains ")
-		f := Food{strings.Split(s[0], " "), strings.Split(strings.TrimRight(s[1], ")"), ", ")}
-		foods = append(foods, f)
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(foods)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo()
-	fmt.Printf("\nDay_%s Part 2 result: %s in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
-
 var allergens map[string][]string
 
-func PartOne(foods []Food) int64 {
+func PartOne(input []byte) int64 {
+	var foods = getFoods(input)
 	var tally int64 = 0
 
 	allergens = make(map[string][]string)
@@ -110,4 +85,49 @@ func PartTwo() string {
 	}
 
 	return strings.Join(dangerous, ",")
+}
+
+func getFoods(input []byte) []Food {
+	var lines = aoc.RemoveEmpties(strings.Split(string(input), "\n"))
+	var foods []Food
+	for _, line := range lines {
+		s := strings.Split(line, " (contains ")
+		f := Food{strings.Split(s[0], " "), strings.Split(strings.TrimRight(s[1], ")"), ", ")}
+		foods = append(foods, f)
+	}
+
+	return foods
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo = ""
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo()
+		fmt.Printf("Part 2 result: %s in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

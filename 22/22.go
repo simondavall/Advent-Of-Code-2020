@@ -2,80 +2,59 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 32179
-	var expectedResult2 int64 = 30498
-	day := "22"
+var title string = "# Day 22: Crab Combat #"
+var url string = "https://adventofcode.com/2020/day/22"
+var expectedResult1 int64 = 32179
+var expectedResult2 int64 = 30498
 
-	blocks, err := aoc.ReadFileSplitBy("input.txt", "\n\n")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+func PartOne(input []byte) int64 {
+	deck1, deck2 := getDecks(input)
+	players := []aoc.Queue[int]{deck1, deck2}
 
-	startPart1 := time.Now()
-	resultPartOne := PartOne(blocks)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(blocks)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
-
-func PartOne(blocks []string) int64 {
-	player := make([]aoc.Queue[int], 2)
-	player[0] = getDeck(blocks[0])
-	player[1] = getDeck(blocks[1])
-
-	winner, _ := playNewGame(player)
+	winner, _ := playNewGame(players)
 	return getScore(winner)
 }
 
-func PartTwo(blocks []string) int64 {
-	player := make([]aoc.Queue[int], 2)
-	player[0] = getDeck(blocks[0])
-	player[1] = getDeck(blocks[1])
+func PartTwo(input []byte) int64 {
+	deck1, deck2 := getDecks(input)
+	players := []aoc.Queue[int]{deck1, deck2}
 
-	winner, _ := playNewRecursiveGame(player, 1)
+	winner, _ := playNewRecursiveGame(players, 1)
 	return getScore(winner)
 }
 
-func playNewGame(player []aoc.Queue[int]) (aoc.Queue[int], int) {
-	for !player[0].IsEmpty() && !player[1].IsEmpty() {
-		card1, _ := player[0].Dequeue()
-		card2, _ := player[1].Dequeue()
+func playNewGame(players []aoc.Queue[int]) (aoc.Queue[int], int) {
+	for !players[0].IsEmpty() && !players[1].IsEmpty() {
+		card1, _ := players[0].Dequeue()
+		card2, _ := players[1].Dequeue()
 
 		if card1 > card2 {
-			player[0].Enqueue(card1)
-			player[0].Enqueue(card2)
+			players[0].Enqueue(card1)
+			players[0].Enqueue(card2)
 		} else {
-			player[1].Enqueue(card2)
-			player[1].Enqueue(card1)
+			players[1].Enqueue(card2)
+			players[1].Enqueue(card1)
 		}
 	}
-	if player[0].Count() > 0 {
-		return player[0], 0
+	if players[0].Count() > 0 {
+		return players[0], 0
 	} else {
-		return player[1], 1
+		return players[1], 1
 	}
 }
 
-func roundSeenBefore(player []aoc.Queue[int], cache []map[string]bool) bool {
-	key0 := getKey(player[0])
-	key1 := getKey(player[1])
+func roundSeenBefore(players []aoc.Queue[int], cache []map[string]bool) bool {
+	key0 := getKey(players[0])
+	key1 := getKey(players[1])
 
 	if cache[0][key0] || cache[1][key1] {
 		return true
@@ -87,26 +66,26 @@ func roundSeenBefore(player []aoc.Queue[int], cache []map[string]bool) bool {
 	return false
 }
 
-func playNewRecursiveGame(player []aoc.Queue[int], game int) (aoc.Queue[int], int) {
+func playNewRecursiveGame(players []aoc.Queue[int], game int) (aoc.Queue[int], int) {
 	cache := make([]map[string]bool, 2)
 	cache[0] = make(map[string]bool)
 	cache[1] = make(map[string]bool)
 	round := 0
-	for !player[0].IsEmpty() && !player[1].IsEmpty() {
+	for !players[0].IsEmpty() && !players[1].IsEmpty() {
 		round++
 
-		if roundSeenBefore(player, cache) {
+		if roundSeenBefore(players, cache) {
 			return nil, 0
 		}
 
-		card1, _ := player[0].Dequeue()
-		card2, _ := player[1].Dequeue()
+		card1, _ := players[0].Dequeue()
+		card2, _ := players[1].Dequeue()
 
 		var winner int
-		if player[0].Count() >= card1 && player[1].Count() >= card2 {
+		if players[0].Count() >= card1 && players[1].Count() >= card2 {
 			newPlayer := make([]aoc.Queue[int], 2)
-			newPlayer[0] = slices.Clone(player[0][:card1])
-			newPlayer[1] = slices.Clone(player[1][:card2])
+			newPlayer[0] = slices.Clone(players[0][:card1])
+			newPlayer[1] = slices.Clone(players[1][:card2])
 
 			_, winner = playNewRecursiveGame(newPlayer, game+1)
 		} else {
@@ -117,18 +96,18 @@ func playNewRecursiveGame(player []aoc.Queue[int], game int) (aoc.Queue[int], in
 			}
 		}
 		if winner == 0 {
-			player[0].Enqueue(card1)
-			player[0].Enqueue(card2)
+			players[0].Enqueue(card1)
+			players[0].Enqueue(card2)
 		} else {
-			player[1].Enqueue(card2)
-			player[1].Enqueue(card1)
+			players[1].Enqueue(card2)
+			players[1].Enqueue(card1)
 		}
 	}
 
-	if player[0].Count() > 0 {
-		return player[0], 0
+	if players[0].Count() > 0 {
+		return players[0], 0
 	} else {
-		return player[1], 1
+		return players[1], 1
 	}
 }
 
@@ -145,7 +124,7 @@ func getDeck(cards string) aoc.Queue[int] {
 }
 
 func arrayToString(a []int, delim string) string {
-	return strings.Trim(strings.Replace(fmt.Sprint(a), " ", delim, -1), "[]")
+	return strings.Trim(strings.ReplaceAll(fmt.Sprint(a), " ", delim), "[]")
 }
 
 func getKey(q aoc.Queue[int]) string {
@@ -161,4 +140,47 @@ func getScore(q aoc.Queue[int]) int64 {
 		multiplier--
 	}
 	return score
+}
+
+func getDecks(input []byte) (aoc.Queue[int], aoc.Queue[int]){
+	var blocks = aoc.RemoveEmpties(strings.Split(string(input), "\n\n"))
+	if (len(blocks) != 2){
+		panic(fmt.Sprintf("Expected 2 blocks when processing input. Found:%d", len(blocks)))
+	}
+	var deck1 = getDeck(blocks[0])
+	var deck2 = getDeck(blocks[1])
+	return deck1, deck2
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

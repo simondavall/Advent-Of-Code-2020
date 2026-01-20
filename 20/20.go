@@ -3,44 +3,19 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
 
-	aoc "aoc"
+	"aoc"
 )
 
-func main() {
-	var expectedResult1 int64 = 111936085519519
-	var expectedResult2 int64 = 1792
-	day := "20"
-
-	blocks, err := aoc.ReadFileSplitBy("input.txt", "\n\n")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	tiles, err := parseBlocks(blocks)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	startPart1 := time.Now()
-	resultPartOne := PartOne(tiles)
-	fmt.Printf("\nDay_%s Part 1 result: %d in %s\n", day, resultPartOne, time.Since(startPart1))
-	startPart2 := time.Now()
-	resultPartTwo := PartTwo(tiles)
-	fmt.Printf("\nDay_%s Part 2 result: %d in %s\n", day, resultPartTwo, time.Since(startPart2))
-
-	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
-		fmt.Println("Incorrect result")
-	} else {
-		fmt.Println("Success")
-	}
-}
+var title string = "# Day 20: Jurassic Jigsaw #"
+var url string = "https://adventofcode.com/2020/day/20"
+var expectedResult1 int64 = 111936085519519
+var expectedResult2 int64 = 1792
 
 type Edge int
 
@@ -64,7 +39,8 @@ var monster = []string{
 	" #  #  #  #  #  #   ",
 }
 
-func PartOne(tiles []Tile) int64 {
+func PartOne(input []byte) int64 {
+	var tiles = getTiles(input)
 	var tally int64 = 1
 
 	for _, tile := range tiles {
@@ -76,13 +52,14 @@ func PartOne(tiles []Tile) int64 {
 	return tally
 }
 
-func PartTwo(tiles []Tile) int64 {
+func PartTwo(input []byte) int64 {
+	var tiles = getTiles(input)
 	jigsaw := constructJigsaw(tiles)
 	picture := buildPicture(jigsaw, tiles)
 
 	monster_count := getMonsterCount(picture)
 
-	var tally int64 = int64(countHashes(picture) - monster_count*countHashes(monster))
+	var tally = int64(countHashes(picture) - monster_count*countHashes(monster))
 
 	return tally
 }
@@ -257,8 +234,8 @@ func transpose(strArr []string) []string {
 		result[i] = make([]byte, yl)
 	}
 	var returnStr []string
-	for i := 0; i < xl; i++ {
-		for j := 0; j < yl; j++ {
+	for i := range xl {
+		for j := range yl {
 			result[i][j] = strArr[j][i]
 		}
 		returnStr = append(returnStr, string(result[i]))
@@ -433,4 +410,45 @@ func neighboutCount(candidate Tile, tiles []Tile) int {
 	}
 
 	return result / 2
+}
+
+func getTiles(input []byte) []Tile {
+	blocks := aoc.RemoveEmpties(strings.Split(string(input), "\n\n"))
+	tiles, err := parseBlocks(blocks)
+	check(err)
+
+	return tiles
+}
+
+func main() {
+	var resultPartOne int64 = -1
+	var resultPartTwo int64 = -1
+
+	fmt.Printf("\n%s", title)
+	fmt.Printf("\n%s\n", url)
+	for i := 1; i < len(os.Args); i++ {
+		filePath := os.Args[i]
+		fmt.Printf("\nFile: %s\n", filePath)
+
+		input, err := os.ReadFile(filePath)
+		check(err)
+
+		startPart1 := time.Now()
+		resultPartOne = PartOne(input)
+		fmt.Printf("Part 1 result: %d in %s\n", resultPartOne, time.Since(startPart1))
+
+		startPart2 := time.Now()
+		resultPartTwo = PartTwo(input)
+		fmt.Printf("Part 2 result: %d in %s\n", resultPartTwo, time.Since(startPart2))
+	}
+	if resultPartOne != expectedResult1 || resultPartTwo != expectedResult2 {
+		fmt.Println("Incorrect result")
+		os.Exit(1)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
