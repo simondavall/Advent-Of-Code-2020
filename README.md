@@ -231,7 +231,7 @@ Part 1 result: 545789 in 104.929694ms\
 Part 2 result: 0 in 134ns\
 Great Success!!
 
-All solutions ran in 7.1633 secs
+### All solutions ran in 7.1633 secs ###
 
 # Execution Times Summary #
 Day 15 - 2.396106121s\

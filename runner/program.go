@@ -43,7 +43,7 @@ func main() {
 
 	elapsed := time.Since(timer)
 	formatted := fmt.Sprintf("%.4f", elapsed.Seconds())
-	fmt.Printf("\nAll solutions ran in %s secs", formatted)
+	fmt.Printf("\n### All solutions ran in %s secs ###", formatted)
 
 	if len(failed) > 0 {
 		fmt.Printf("\nIncorrect results found for %d/%d solutions.", len(failed), totalSolutions)
