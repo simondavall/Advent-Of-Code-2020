@@ -10,7 +10,7 @@ import (
 	"aoc"
 )
 
-var title string = "# Day 21: Allergen Assessment #"
+var title string = "## Day 21: Allergen Assessment ##"
 var url string = "https://adventofcode.com/2020/day/21"
 var expectedResult1 int64 = 2493
 var expectedResult2 string = "kqv,jxx,zzt,dklgl,pmvfzk,tsnkknk,qdlpbt,tlgrhdh"

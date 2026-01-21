@@ -9,7 +9,7 @@ import (
 	"aoc"
 )
 
-var title string = "# Day 24: Lobby Layout #"
+var title string = "## Day 24: Lobby Layout ##"
 var url string = "https://adventofcode.com/2020/day/24"
 var expectedResult1 int64 = 330
 var expectedResult2 int64 = 3711

@@ -11,7 +11,7 @@ import (
 	aoc "aoc"
 )
 
-var title string = "# Day 4: Passport Processing #"
+var title string = "## Day 4: Passport Processing ##"
 var url string = "https://adventofcode.com/2020/day/4"
 var expectedResult1 int64 = 206
 var expectedResult2 int64 = 123

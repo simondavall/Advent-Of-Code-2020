@@ -11,7 +11,7 @@ import (
 	"aoc"
 )
 
-var title string = "# Day 10: Adapter Array #"
+var title string = "## Day 10: Adapter Array ##"
 var url string = "https://adventofcode.com/2020/day/10"
 var expectedResult1 int64 = 2414
 var expectedResult2 int64 = 21156911906816

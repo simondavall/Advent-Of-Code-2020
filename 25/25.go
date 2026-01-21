@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var title string = "# Day 25: Combo Breaker #"
+var title string = "## Day 25: Combo Breaker ##"
 var url string = "https://adventofcode.com/2020/day/25"
 var expectedResult1 int64 = 545789
 var expectedResult2 int64 = 0

@@ -13,7 +13,7 @@ import (
 	"aoc"
 )
 
-var title string = "# Day 16: Ticket Translation #"
+var title string = "## Day 16: Ticket Translation ##"
 var url string = "https://adventofcode.com/2020/day/16"
 var expectedResult1 int64 = 32835
 var expectedResult2 int64 = 514662805187

@@ -10,7 +10,7 @@ import (
 	"aoc"
 )
 
-var title string = "# Day 9: Encoding Error #"
+var title string = "## Day 9: Encoding Error ##"
 var url string = "https://adventofcode.com/2020/day/9"
 var expectedResult1 int64 = 14144619
 var expectedResult2 int64 = 1766397

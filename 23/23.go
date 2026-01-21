@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var title string = "# Day 23: Crab Cups #"
+var title string = "## Day 23: Crab Cups ##"
 var url string = "https://adventofcode.com/2020/day/23"
 var expectedResult1 int64 = 32897654
 var expectedResult2 int64 = 186715244496

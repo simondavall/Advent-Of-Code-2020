@@ -11,7 +11,7 @@ import (
 	"aoc"
 )
 
-var title string = "# Day 14: Docking Data #"
+var title string = "## Day 14: Docking Data ##"
 var url string = "https://adventofcode.com/2020/day/14"
 var expectedResult1 int64 = 13105044880745
 var expectedResult2 int64 = 3505392154485
