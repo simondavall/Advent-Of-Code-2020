@@ -54,7 +54,7 @@ func main() {
 	}
 
 	keys := GetSortedKeys(executionTimes)
-	fmt.Println("\n\n### Execution Times Summary ###")
+	fmt.Println("\n\n# Execution Times Summary #")
 	for _, k := range keys {
 		fmt.Printf("Day %02d - %s\n", k, executionTimes[k])
 	}
